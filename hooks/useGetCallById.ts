@@ -2,30 +2,37 @@ import { useEffect, useState } from 'react';
 import { Call, useStreamVideoClient } from '@stream-io/video-react-sdk';
 
 export const useGetCallById = (id: string | string[]) => {
-  const [call, setCall] = useState<Call>();
+  const [call, setCall] = useState<Call | null>(null);
   const [isCallLoading, setIsCallLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   const client = useStreamVideoClient();
 
   useEffect(() => {
-    if (!client) return;
+    if (!client || !id) {
+      setIsCallLoading(false);
+      return;
+    }
     
     const loadCall = async () => {
       try {
-        // https://getstream.io/video/docs/react/guides/querying-calls/#filters
-        const { calls } = await client.queryCalls({ filter_conditions: { id } });
+        const { calls } = await client.queryCalls({ 
+          filter_conditions: { id: Array.isArray(id) ? id[0] : id } 
+        });
 
-        if (calls.length > 0) setCall(calls[0]);
-
-        setIsCallLoading(false);
+        setCall(calls.length > 0 ? calls[0] : null);
       } catch (error) {
-        console.error(error);
+        console.error('Error loading call:', error);
+        setError(error instanceof Error ? error : new Error('Unknown error occurred'));
+      } finally {
         setIsCallLoading(false);
       }
     };
 
+    setIsCallLoading(true);
+    setError(null);
     loadCall();
   }, [client, id]);
 
-  return { call, isCallLoading };
+  return { call, isCallLoading, error };
 };
