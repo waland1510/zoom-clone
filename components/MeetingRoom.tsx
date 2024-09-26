@@ -22,6 +22,7 @@ import {
 import Loader from './Loader';
 import EndCallButton from './EndCallButton';
 import { cn } from '@/lib/utils';
+import Alert from './Alert';
 
 type CallLayoutType = 'grid' | 'speaker-left' | 'speaker-right';
 
@@ -36,6 +37,12 @@ const MeetingRoom = () => {
   // for more detail about types of CallingState see: https://getstream.io/video/docs/react/ui-cookbook/ringing-call/#incoming-call-panel
   const callingState = useCallCallingState();
 
+  if (callingState === CallingState.LEFT) return (
+    <Alert
+      title="The call has been ended by the host"
+      iconUrl="/icons/call-ended.svg" 
+      />
+    );
   if (callingState !== CallingState.JOINED) return <Loader />;
 
   const CallLayout = () => {

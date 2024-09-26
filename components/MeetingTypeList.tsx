@@ -50,12 +50,17 @@ const MeetingTypeList = () => {
           custom: {
             description,
           },
+          members: [
+            {
+              user_id: user.id,
+              role: 'admin',
+            },
+          ],
         },
       });
+  
       setCallDetail(call);
-      if (!values.description) {
-        router.push(`/meeting/${call.id}`);
-      }
+      router.push(`/meeting/${call.id}`);
       toast({
         title: 'Meeting Created',
       });
@@ -68,6 +73,18 @@ const MeetingTypeList = () => {
   if (!client || !user) return <Loader />;
 
   const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${callDetail?.id}`;
+
+  async function handleJoinMeeting(): Promise<void> {
+    if (!values.link) {
+      toast({ title: 'Please enter a link' });
+      return;
+    }
+    const call = client?.call('default', values.link.split('/').pop() as string);
+        await call?.updateCallMembers({
+        update_members: [{ user_id: user?.id! }],
+      });
+    router.push(values.link);
+  }
 
   return (
     <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -155,7 +172,7 @@ const MeetingTypeList = () => {
         title="Type the link here"
         className="text-center"
         buttonText="Join Meeting"
-        handleClick={() => router.push(values.link)}
+        handleClick={handleJoinMeeting}
       >
         <Input
           placeholder="Meeting link"
@@ -171,7 +188,19 @@ const MeetingTypeList = () => {
         className="text-center"
         buttonText="Start Meeting"
         handleClick={createMeeting}
-      />
+      >
+        <div className="flex flex-col gap-2.5">
+          <label className="text-base font-normal leading-[22.4px] text-sky-2">
+            Add a description
+          </label>
+          <Textarea
+            className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+            onChange={(e) =>
+              setValues({ ...values, description: e.target.value })
+            }
+          />
+        </div>
+      </MeetingModal>
     </section>
   );
 };

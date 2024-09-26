@@ -4,8 +4,8 @@ import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { avatarImages } from "@/constants";
 import { useToast } from "./ui/use-toast";
+import { MemberResponse } from "@stream-io/video-react-sdk";
 
 interface MeetingCardProps {
   title: string;
@@ -16,6 +16,7 @@ interface MeetingCardProps {
   buttonText?: string;
   handleClick: () => void;
   link: string;
+  members: MemberResponse[];
 }
 
 const MeetingCard = ({
@@ -27,6 +28,7 @@ const MeetingCard = ({
   handleClick,
   link,
   buttonText,
+  members,
 }: MeetingCardProps) => {
   const { toast } = useToast();
 
@@ -43,20 +45,18 @@ const MeetingCard = ({
       </article>
       <article className={cn("flex justify-center relative", {})}>
         <div className="relative flex w-full max-sm:hidden">
-          {avatarImages.map((img, index) => (
+        {members.map((member) => (
             <Image
-              key={index}
-              src={img}
+              key={member.user?.id}
+              src={member.user?.image!}
               alt="attendees"
               width={40}
               height={40}
-              className={cn("rounded-full", { absolute: index > 0 })}
-              style={{ top: 0, left: index * 28 }}
+              className={"rounded-full"}
+              style={{ top: 0, left: 0 }}
             />
           ))}
-          <div className="flex-center absolute left-[136px] size-10 rounded-full border-[5px] border-dark-3 bg-dark-4">
-            +5
-          </div>
+
         </div>
         {!isPreviousMeeting && (
           <div className="flex gap-2">

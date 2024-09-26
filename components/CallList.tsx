@@ -98,6 +98,9 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
                 ? () => router.push(`${(meeting as CallRecording).url}`)
                 : () => router.push(`/meeting/${(meeting as Call).id}`)
             }
+            members={
+              meeting instanceof Call ? meeting.state.members : []
+            }
           />
         ))
       ) : (
