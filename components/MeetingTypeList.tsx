@@ -58,7 +58,7 @@ const MeetingTypeList = () => {
           ],
         },
       });
-  
+
       setCallDetail(call);
       router.push(`/meeting/${call.id}`);
       toast({
@@ -73,18 +73,6 @@ const MeetingTypeList = () => {
   if (!client || !user) return <Loader />;
 
   const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${callDetail?.id}`;
-
-  async function handleJoinMeeting(): Promise<void> {
-    if (!values.link) {
-      toast({ title: 'Please enter a link' });
-      return;
-    }
-    const call = client?.call('default', values.link.split('/').pop() as string);
-        await call?.updateCallMembers({
-        update_members: [{ user_id: user?.id! }],
-      });
-    router.push(values.link);
-  }
 
   return (
     <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -172,7 +160,9 @@ const MeetingTypeList = () => {
         title="Type the link here"
         className="text-center"
         buttonText="Join Meeting"
-        handleClick={handleJoinMeeting}
+        handleClick={() => {
+          router.push(meetingLink);
+        }}
       >
         <Input
           placeholder="Meeting link"
@@ -196,7 +186,7 @@ const MeetingTypeList = () => {
           <Textarea
             className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
             onChange={(e) =>
-              setValues({ ...values, description: e.target.value })
+              setValues({ ...values, description: e.target.value, dateTime: new Date() })
             }
           />
         </div>

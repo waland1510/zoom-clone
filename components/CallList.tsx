@@ -1,6 +1,6 @@
 'use client';
 
-import { Call, CallRecording } from '@stream-io/video-react-sdk';
+import { Call, CallRecording, MemberResponse } from '@stream-io/video-react-sdk';
 
 import Loader from './Loader';
 import { useGetCalls } from '@/hooks/useGetCalls';
@@ -8,11 +8,16 @@ import MeetingCard from './MeetingCard';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+interface CustomCallRecording extends CallRecording {
+  title: string;
+  members: MemberResponse[];
+}
+
 const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
   const router = useRouter();
   const { endedCalls, upcomingCalls, callRecordings, isLoading } =
     useGetCalls();
-  const [recordings, setRecordings] = useState<CallRecording[]>([]);
+  const [recordings, setRecordings] = useState<CustomCallRecording[]>([]);
 
   const getCalls = () => {
     switch (type) {
@@ -43,12 +48,23 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
   useEffect(() => {
     const fetchRecordings = async () => {
       const callData = await Promise.all(
-        callRecordings?.map((meeting) => meeting.queryRecordings()) ?? [],
+        callRecordings?.map(async (meeting) => {
+          const recordingsResponse = await meeting.queryRecordings();
+          return {
+            recordings: recordingsResponse.recordings,
+            title: meeting.state?.custom?.description || 'No Description',
+            members: meeting.state?.members
+          };
+        }) ?? [],
       );
 
       const recordings = callData
-        .filter((call) => call.recordings.length > 0)
-        .flatMap((call) => call.recordings);
+        .filter((call) => call.recordings && call.recordings.length > 0)
+        .flatMap((call) => call.recordings.map(recording => ({
+          ...recording,
+          title: call.title,
+          members: call.members
+        })));
 
       setRecordings(recordings);
     };
@@ -78,7 +94,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
             }
             title={
               (meeting as Call).state?.custom?.description ||
-              (meeting as CallRecording).filename?.substring(0, 20) ||
+              recordings.find(rec => rec.url === (meeting as CallRecording).url)?.title ||
               'No Description'
             }
             date={
@@ -99,7 +115,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
                 : () => router.push(`/meeting/${(meeting as Call).id}`)
             }
             members={
-              meeting instanceof Call ? meeting.state.members : []
+              meeting instanceof Call ? meeting.state.members : recordings.find(rec => rec.url === (meeting as CallRecording).url)?.members
             }
           />
         ))

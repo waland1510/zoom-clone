@@ -16,7 +16,7 @@ interface MeetingCardProps {
   buttonText?: string;
   handleClick: () => void;
   link: string;
-  members: MemberResponse[];
+  members?: MemberResponse[];
 }
 
 const MeetingCard = ({
@@ -45,7 +45,7 @@ const MeetingCard = ({
       </article>
       <article className={cn("flex justify-center relative", {})}>
         <div className="relative flex w-full max-sm:hidden">
-        {members.map((member) => (
+        {members?.map((member) => (
             <Image
               key={member.user?.id}
               src={member.user?.image!}
@@ -56,7 +56,6 @@ const MeetingCard = ({
               style={{ top: 0, left: 0 }}
             />
           ))}
-
         </div>
         {!isPreviousMeeting && (
           <div className="flex gap-2">

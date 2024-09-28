@@ -1,10 +1,10 @@
+'use client';
+
 import MeetingTypeList from '@/components/MeetingTypeList';
+import { useCurrentTimeAndDate } from '@/hooks/useCurrentTimeAndDate';
 
 const Home = () => {
-  const now = new Date();
-
-  const time = now.toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' });
-  const date = (new Intl.DateTimeFormat('en-CA', { dateStyle: 'full' })).format(now);
+  const { time, date } = useCurrentTimeAndDate();
 
   return (
     <section className="flex size-full flex-col gap-5 text-white">

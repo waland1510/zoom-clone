@@ -25,6 +25,14 @@ const MeetingPage = () => {
     </p>
   );
 
+  async function handleJoinMeeting(): Promise<void> {
+    console.log({ call });
+    await call?.updateCallMembers({
+      update_members: [{ user_id: user?.id! }],
+    });
+  }
+  handleJoinMeeting()
+
   // get more info about custom call type:  https://getstream.io/video/docs/react/guides/configuring-call-types/
   const notAllowed = call.type === 'invited' && (!user || !call.state.members.find((m) => m.user.id === user.id));
 
